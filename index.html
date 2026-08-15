@@ -209,6 +209,35 @@ input[type=number]{width:68px}
   .spell-add-form,.inventory-form-upgrade{grid-template-columns:1fr}
   .slot-grid{grid-template-columns:1fr}
 }
+
+.dynamic-spell-reference{display:grid;grid-template-columns:1fr;gap:8px}
+.ref-level{margin-top:10px}
+.ref-level-title{margin:0 0 6px;color:#f0d49a;font-size:14px}
+.ref-spell{border:1px solid var(--line);border-radius:12px;background:#11161d;overflow:hidden}
+.ref-spell-head{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px;cursor:pointer}
+.ref-spell-name{font-weight:700}
+.ref-spell-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.ref-spell-body{display:none;padding:0 10px 11px;color:#d4d9e0;font-size:13px;line-height:1.45}
+.ref-spell.open .ref-spell-body{display:block}
+.ref-empty{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted);font-size:12px}
+
+.ref-detail-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px 12px;
+  margin-bottom:8px;
+}
+.ref-detail{
+  background:#181e27;
+  border:1px solid #29303a;
+  border-radius:8px;
+  padding:6px 8px;
+}
+.ref-detail b{color:#f0d49a}
+.ref-description{margin-top:8px}
+@media(max-width:700px){
+  .ref-detail-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -346,23 +375,35 @@ input[type=number]{width:68px}
 <div class="chosen-spells" id="chosenSpells"></div>
 <div class="spell-add-form">
 <label>Nome
-      <input id="newSpellName" placeholder="Nome da nova magia" type="text"/>
+  <input id="newSpellName" placeholder="Nome da nova magia" type="text"/>
 </label>
 <label>Círculo
-      <select id="newSpellLevel"></select>
+  <select id="newSpellLevel"></select>
 </label>
 <label>Origem
-      <select id="newSpellSource">
+  <select id="newSpellSource">
 <option value="bard">Bardo</option>
 <option value="lore">Segredo Lore (extra)</option>
 <option value="secret">Segredo Mágico</option>
 </select>
 </label>
-<label>Alcance
-      <input id="newSpellRange" placeholder="Ex.: 18 m" type="text"/>
+<label>Tempo de conjuração
+  <input id="newSpellCast" placeholder="Ex.: 1 ação" type="text"/>
 </label>
-<label class="spell-wide">Resumo / efeito
-      <textarea id="newSpellNotes" placeholder="Dano, salvaguarda, duração, observações..."></textarea>
+<label>Alcance
+  <input id="newSpellRange" placeholder="Ex.: 18 m" type="text"/>
+</label>
+<label>Duração
+  <input id="newSpellDuration" placeholder="Ex.: Instantânea" type="text"/>
+</label>
+<label>Salvaguarda / ataque
+  <input id="newSpellSave" placeholder="Ex.: SAB; metade no sucesso" type="text"/>
+</label>
+<label>Dano / cura
+  <input id="newSpellDamage" placeholder="Ex.: 3d6 psíquico" type="text"/>
+</label>
+<label class="spell-wide">Descrição completa para uso em jogo
+  <textarea id="newSpellNotes" placeholder="Efeito, condições, área, escalonamento, limitações e observações..."></textarea>
 </label>
 <label class="checkline"><input id="newSpellConc" type="checkbox"/> Exige concentração</label>
 <button class="btn spell-wide" onclick="addSpellChoice()" type="button">Adicionar magia</button>
@@ -370,30 +411,7 @@ input[type=number]{width:68px}
 <div class="small spell-warning" id="spellManagerWarning"></div>
 </div>
 <hr class="soft-sep"/>
-<h3>Referência rápida das magias iniciais</h3>
-
-<div class="spell-level"><h3>Truques</h3>
-<div class="spell"><div class="spell-head"><button>Zombaria Viciosa</button><span class="badge">18 m</span><span class="badge">Ação</span></div><div class="spell-body"><b>Salvaguarda:</b> Sabedoria. <b>Dano:</b> 2d4 psíquico no nível 6. Em falha, além do dano, o alvo sofre desvantagem na próxima jogada de ataque que fizer antes do fim do próximo turno dele. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Prestidigitação</button><span class="badge">3 m</span><span class="badge">Ação</span></div><div class="spell-body">Pequenos efeitos mágicos utilitários: efeitos sensoriais simples, acender/apagar chama pequena, limpar/sujar objeto pequeno, alterar sabor/temperatura, criar símbolo ou bugiganga temporária, entre usos semelhantes. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Amizade</button><span class="badge conc">Concentração</span><span class="badge">1 min</span></div><div class="spell-body">Você obtém vantagem em testes de Carisma direcionados a uma criatura escolhida que não seja hostil. Quando a magia termina, ela percebe que foi influenciada magicamente e pode reagir de acordo. <b>Alcance:</b> pessoal. <b>Concentração:</b> sim, até 1 minuto.</div></div>
-</div>
-<div class="spell-level"><h3>1º círculo</h3>
-<div class="spell"><div class="spell-head"><button>Sussurros Dissonantes</button><span class="badge">18 m</span><span class="badge">Ação</span></div><div class="spell-body"><b>Salvaguarda:</b> Sabedoria. <b>Dano:</b> 3d6 psíquico; metade no sucesso. Em falha, o alvo usa imediatamente a reação, se disponível, para se afastar de você pelo caminho mais seguro. Esse deslocamento pode provocar ataques de oportunidade. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Palavra Curativa</button><span class="badge bonus">Ação bônus</span><span class="badge">18 m</span></div><div class="spell-body">Uma criatura à sua escolha recupera <b>1d4 + 4 PV</b>. Em espaços superiores, soma +1d4 por círculo acima do 1º. Não funciona em mortos-vivos ou constructos. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Fogo das Fadas</button><span class="badge conc">Concentração</span><span class="badge">18 m</span></div><div class="spell-body"><b>Área:</b> cubo de 6 m. <b>Salvaguarda:</b> Destreza. Alvos que falham ficam delineados por luz; ataques contra eles têm vantagem se o atacante puder vê-los, e eles não recebem benefício de invisibilidade. <b>Duração:</b> até 1 min. Afeta criaturas dentro da área, inclusive aliados, se falharem.</div></div>
-</div>
-<div class="spell-level"><h3>2º círculo</h3>
-<div class="spell"><div class="spell-head"><button>Silêncio</button><span class="badge conc">Concentração</span><span class="badge">36 m</span></div><div class="spell-body"><b>Área:</b> esfera de 6 m de raio. Nenhum som é produzido ou atravessa a área; criaturas ficam imunes a dano trovejante ali e conjurações com componente verbal não podem ser realizadas dentro da zona. <b>Duração:</b> até 10 min. <b>Ritual:</b> sim para Bardo.</div></div>
-<div class="spell"><div class="spell-head"><button>Invisibilidade</button><span class="badge conc">Concentração</span><span class="badge">Toque</span></div><div class="spell-body">O alvo fica invisível por até 1 h. A magia termina para esse alvo se ele atacar ou conjurar uma magia. Em círculos superiores, pode afetar um alvo adicional por círculo acima do 2º. <b>Concentração:</b> sim.</div></div>
-<div class="spell"><div class="spell-head"><button>Esquentar Metal</button><span class="badge conc">Concentração</span><span class="badge">18 m</span></div><div class="spell-body">Escolha objeto de metal manufaturado que possa ver. Causa <b>2d8 de fogo</b> ao conjurar. Enquanto mantiver concentração, pode usar ação bônus em turnos seguintes para repetir o dano. Se a criatura estiver segurando/vestindo o objeto, pode ser forçada a largá-lo; se não puder, sofre desvantagem em ataques e testes de habilidade até o início do seu próximo turno. <b>Duração:</b> até 1 min.</div></div>
-<div class="spell"><div class="spell-head"><button>Chicote Psíquico de Tasha</button><span class="badge">27 m</span><span class="badge">Ação</span></div><div class="spell-body"><b>Salvaguarda:</b> Inteligência. <b>Dano:</b> 3d6 psíquico; metade no sucesso. Em falha, até o fim do próximo turno do alvo ele não pode usar reação e deve escolher apenas uma entre ação, ação bônus ou movimento em seu turno. <b>Concentração:</b> não.</div></div>
-</div>
-<div class="spell-level"><h3>3º círculo</h3>
-<div class="spell"><div class="spell-head"><button>Dissipar Magia</button><span class="badge">36 m</span><span class="badge">Ação</span></div><div class="spell-body">Escolha criatura, objeto ou efeito mágico dentro do alcance. Magias de 3º círculo ou inferiores terminam automaticamente; para círculos superiores, faça teste de habilidade de conjuração contra CD 10 + círculo da magia. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Padrão Hipnótico</button><span class="badge conc">Concentração</span><span class="badge">36 m</span></div><div class="spell-body"><b>Área:</b> cubo de 9 m. <b>Salvaguarda:</b> Sabedoria. Quem falha fica enfeitiçado, incapacitado e com deslocamento 0 enquanto durar. O efeito termina para uma criatura se ela sofrer dano ou se outra criatura usar uma ação para despertá-la. <b>Duração:</b> até 1 min. Pode afetar aliados.</div></div>
-<div class="spell"><div class="spell-head"><button>Enviar Mensagem</button><span class="badge">Ilimitado</span><span class="badge">Ação</span></div><div class="spell-body">Você envia uma mensagem curta (até 25 palavras) a uma criatura conhecida. Ela reconhece você como remetente se souber quem você é e pode responder imediatamente com outra mensagem curta. Distâncias extremas e outros planos podem impedir ou dificultar o contato. <b>Concentração:</b> não.</div></div>
-<div class="spell"><div class="spell-head"><button>Passo Trovejante</button><span class="badge">27 m</span><span class="badge">Ação</span></div><div class="spell-body">Você se teleporta para um espaço desocupado que possa ver e pode levar uma criatura voluntária adjacente, se ela couber no destino. Imediatamente após sair, criaturas a até <b>3 m do ponto de origem</b> fazem salvaguarda de Constituição: <b>3d10 trovejante</b> na falha, metade no sucesso. <b>Concentração:</b> não.</div></div>
-</div>
+<h3>Referência rápida das magias escolhidas</h3><div class="dynamic-spell-reference" id="dynamicSpellReference"></div>
 </div>
 </div>
 </section>
@@ -482,7 +500,7 @@ input[type=number]{width:68px}
 const STORE='lucas_bardo6_sheet_v4';
 const PROGRESSION={"1": {"prof": 2, "cantrips": 2, "known": 4, "slots": [2, 0, 0, 0, 0, 0, 0, 0, 0]}, "2": {"prof": 2, "cantrips": 2, "known": 5, "slots": [3, 0, 0, 0, 0, 0, 0, 0, 0]}, "3": {"prof": 2, "cantrips": 2, "known": 6, "slots": [4, 2, 0, 0, 0, 0, 0, 0, 0]}, "4": {"prof": 2, "cantrips": 3, "known": 7, "slots": [4, 3, 0, 0, 0, 0, 0, 0, 0]}, "5": {"prof": 3, "cantrips": 3, "known": 8, "slots": [4, 3, 2, 0, 0, 0, 0, 0, 0]}, "6": {"prof": 3, "cantrips": 3, "known": 9, "slots": [4, 3, 3, 0, 0, 0, 0, 0, 0]}, "7": {"prof": 3, "cantrips": 3, "known": 10, "slots": [4, 3, 3, 1, 0, 0, 0, 0, 0]}, "8": {"prof": 3, "cantrips": 3, "known": 11, "slots": [4, 3, 3, 2, 0, 0, 0, 0, 0]}, "9": {"prof": 4, "cantrips": 3, "known": 12, "slots": [4, 3, 3, 3, 1, 0, 0, 0, 0]}, "10": {"prof": 4, "cantrips": 4, "known": 14, "slots": [4, 3, 3, 3, 2, 0, 0, 0, 0]}, "11": {"prof": 4, "cantrips": 4, "known": 15, "slots": [4, 3, 3, 3, 2, 1, 0, 0, 0]}, "12": {"prof": 4, "cantrips": 4, "known": 15, "slots": [4, 3, 3, 3, 2, 1, 0, 0, 0]}, "13": {"prof": 5, "cantrips": 4, "known": 16, "slots": [4, 3, 3, 3, 2, 1, 1, 0, 0]}, "14": {"prof": 5, "cantrips": 4, "known": 18, "slots": [4, 3, 3, 3, 2, 1, 1, 0, 0]}, "15": {"prof": 5, "cantrips": 4, "known": 19, "slots": [4, 3, 3, 3, 2, 1, 1, 1, 0]}, "16": {"prof": 5, "cantrips": 4, "known": 19, "slots": [4, 3, 3, 3, 2, 1, 1, 1, 0]}, "17": {"prof": 6, "cantrips": 4, "known": 20, "slots": [4, 3, 3, 3, 2, 1, 1, 1, 1]}, "18": {"prof": 6, "cantrips": 4, "known": 22, "slots": [4, 3, 3, 3, 3, 1, 1, 1, 1]}, "19": {"prof": 6, "cantrips": 4, "known": 22, "slots": [4, 3, 3, 3, 3, 2, 1, 1, 1]}, "20": {"prof": 6, "cantrips": 4, "known": 22, "slots": [4, 3, 3, 3, 3, 2, 2, 1, 1]}};
 const DEFAULT_INVENTORY=[{"name": "Armadura de couro batido", "qty": 1, "type": "Equipamento", "desc": "CA base 12 + DES."}, {"name": "Rapieira", "qty": 1, "type": "Equipamento", "desc": "1d8 perfurante • acuidade."}, {"name": "Arco curto", "qty": 1, "type": "Equipamento", "desc": "1d6 perfurante • alcance 24/96 m."}, {"name": "Gaita", "qty": 1, "type": "Equipamento", "desc": "Instrumento musical."}, {"name": "Castanhola", "qty": 1, "type": "Equipamento", "desc": "Instrumento musical."}, {"name": "Alaúde", "qty": 1, "type": "Equipamento", "desc": "Instrumento musical."}, {"name": "Kit/Ferramentas de ladrão", "qty": 1, "type": "Ferramenta", "desc": ""}, {"name": "Colar de Condução Rúnica", "qty": 1, "type": "Acessório", "desc": "Foco arcano; +1 em ataque/CD de magia até 3× por descanso longo, conforme regra da mesa."}, {"name": "Anel do Eco Secreto", "qty": 1, "type": "Acessório", "desc": "1× por descanso longo; última conversa em ambiente fechado nas últimas 24 h."}, {"name": "Poção de cura menor", "qty": 1, "type": "Poção", "desc": "Efeito conforme regra da mesa."}, {"name": "Poção de cura maior", "qty": 1, "type": "Poção", "desc": "Efeito conforme regra da mesa."}, {"name": "Poção de mana menor", "qty": 1, "type": "Poção", "desc": "Recupera 1 espaço de 1º círculo."}, {"name": "Poção de mana maior", "qty": 1, "type": "Poção", "desc": "Recupera 1 espaço de 2º círculo."}, {"name": "Poção de respirar submerso", "qty": 1, "type": "Poção", "desc": "Duração: 1 hora."}];
-const DEFAULT_SPELLS=[{"name": "Zombaria Viciosa", "level": 0, "source": "bard", "range": "18 m", "conc": false, "notes": "Truque ofensivo."}, {"name": "Prestidigitação", "level": 0, "source": "bard", "range": "3 m", "conc": false, "notes": "Truque utilitário."}, {"name": "Amizade", "level": 0, "source": "bard", "range": "Pessoal", "conc": true, "notes": "Vantagem em testes de Carisma contra criatura escolhida."}, {"name": "Sussurros Dissonantes", "level": 1, "source": "bard", "range": "18 m", "conc": false, "notes": "Dano psíquico e afastamento em falha."}, {"name": "Palavra Curativa", "level": 1, "source": "bard", "range": "18 m", "conc": false, "notes": "Cura como ação bônus."}, {"name": "Fogo das Fadas", "level": 1, "source": "bard", "range": "18 m", "conc": true, "notes": "Delineia alvos; ataques podem ganhar vantagem."}, {"name": "Silêncio", "level": 2, "source": "bard", "range": "36 m", "conc": true, "notes": "Zona sem som; impede componentes verbais."}, {"name": "Invisibilidade", "level": 2, "source": "bard", "range": "Toque", "conc": true, "notes": "Alvo invisível até atacar/conjurar ou a magia terminar."}, {"name": "Esquentar Metal", "level": 2, "source": "bard", "range": "18 m", "conc": true, "notes": "Dano de fogo em objeto metálico manufaturado."}, {"name": "Dissipar Magia", "level": 3, "source": "bard", "range": "36 m", "conc": false, "notes": "Encerra efeitos mágicos conforme círculo/teste."}, {"name": "Padrão Hipnótico", "level": 3, "source": "bard", "range": "36 m", "conc": true, "notes": "Controle em área."}, {"name": "Enviar Mensagem", "level": 3, "source": "bard", "range": "Longa distância", "conc": false, "notes": "Mensagem curta a criatura conhecida."}, {"name": "Chicote Psíquico de Tasha", "level": 2, "source": "lore", "range": "27 m", "conc": false, "notes": "Segredo Mágico Adicional do Colégio do Conhecimento."}, {"name": "Passo Trovejante", "level": 3, "source": "lore", "range": "27 m", "conc": false, "notes": "Segredo Mágico Adicional do Colégio do Conhecimento."}];
+const DEFAULT_SPELLS=[{"name": "Zombaria Viciosa", "level": 0, "source": "bard", "range": "18 m", "conc": false, "notes": "Uma criatura que você possa ver e que possa ouvi-lo faz uma salvaguarda de Sabedoria. Em falha, sofre dano psíquico e tem desvantagem na próxima jogada de ataque que fizer antes do fim do próximo turno dela. O dano do truque aumenta com o nível do personagem.", "cast": "1 ação", "duration": "Instantânea", "save": "Sabedoria; nenhum dano no sucesso", "damage": "2d4 psíquico no nível 6"}, {"name": "Prestidigitação", "level": 0, "source": "bard", "range": "3 m", "conc": false, "notes": "Produz pequenos efeitos mágicos utilitários, como efeitos sensoriais simples, acender ou apagar uma chama pequena, limpar ou sujar um objeto, alterar temperatura ou sabor de material não vivo, criar uma pequena marca ou produzir uma bugiganga temporária. Não exige concentração.", "cast": "1 ação", "duration": "Até 1 hora, conforme o efeito", "save": "Nenhuma", "damage": "—"}, {"name": "Amizade", "level": 0, "source": "bard", "range": "Pessoal", "conc": true, "notes": "Enquanto mantiver concentração, você tem vantagem em testes de Carisma direcionados a uma criatura escolhida que não seja hostil. Quando a magia termina, a criatura percebe que foi influenciada magicamente e pode reagir de acordo.", "cast": "1 ação", "duration": "Até 1 minuto", "save": "Nenhuma", "damage": "—"}, {"name": "Sussurros Dissonantes", "level": 1, "source": "bard", "range": "18 m", "conc": false, "notes": "Em falha, além do dano, o alvo usa imediatamente a reação, se disponível, para se afastar de você pelo caminho mais seguro. Esse movimento usa a reação e pode provocar ataques de oportunidade. Em espaços superiores, o dano aumenta em 1d6 por círculo acima do 1º.", "cast": "1 ação", "duration": "Instantânea", "save": "Sabedoria; metade do dano no sucesso", "damage": "3d6 psíquico"}, {"name": "Palavra Curativa", "level": 1, "source": "bard", "range": "18 m", "conc": false, "notes": "Uma criatura que você possa ver dentro do alcance recupera PV. Não afeta mortos-vivos nem constructos. Em espaços superiores, a cura aumenta em 1d4 por círculo acima do 1º.", "cast": "1 ação bônus", "duration": "Instantânea", "save": "Nenhuma", "damage": "Cura 1d4 + modificador de Carisma"}, {"name": "Fogo das Fadas", "level": 1, "source": "bard", "range": "18 m", "conc": true, "notes": "Área: cubo de 6 m. Cada criatura na área faz salvaguarda de Destreza. Quem falhar fica delineado por luz; ataques contra ela têm vantagem se o atacante puder vê-la, e ela não recebe benefício de invisibilidade. Pode afetar aliados dentro da área.", "cast": "1 ação", "duration": "Concentração, até 1 minuto", "save": "Destreza; evita o efeito no sucesso", "damage": "—"}, {"name": "Silêncio", "level": 2, "source": "bard", "range": "36 m", "conc": true, "notes": "Cria uma esfera de 6 m de raio. Nenhum som é produzido ou atravessa a área. Criaturas inteiramente dentro dela ficam imunes a dano trovejante, e uma magia que dependa de componente verbal não pode ser conjurada ali.", "cast": "1 ação ou ritual", "duration": "Concentração, até 10 minutos", "save": "Nenhuma", "damage": "—"}, {"name": "Invisibilidade", "level": 2, "source": "bard", "range": "Toque", "conc": true, "notes": "Uma criatura tocada fica invisível, junto do equipamento que estiver vestindo ou carregando. Para esse alvo, a magia termina se ele atacar ou conjurar uma magia. Ao usar espaço superior, pode afetar uma criatura adicional por círculo acima do 2º.", "cast": "1 ação", "duration": "Concentração, até 1 hora", "save": "Nenhuma", "damage": "—"}, {"name": "Ajuda", "level": 2, "source": "bard", "range": "9 m", "conc": false, "notes": "Escolha até 3 criaturas dentro do alcance. Os PV máximos e os PV atuais de cada uma aumentam em 5 pela duração. Não exige concentração. Ao conjurar com espaço acima do 2º, o aumento cresce em +5 PV para cada círculo acima do 2º.", "cast": "1 ação", "duration": "8 horas", "save": "Nenhuma", "damage": "+5 PV máximos e atuais"}, {"name": "Dissipar Magia", "level": 3, "source": "bard", "range": "36 m", "conc": false, "notes": "Escolha uma criatura, objeto ou efeito mágico dentro do alcance. Magias de 3º círculo ou inferiores sobre o alvo terminam automaticamente. Para cada magia de círculo superior, faça um teste de habilidade usando seu atributo de conjuração contra CD 10 + círculo da magia; em sucesso, ela termina.", "cast": "1 ação", "duration": "Instantânea", "save": "Teste de habilidade de conjuração apenas contra magia de 4º círculo ou superior", "damage": "—"}, {"name": "Padrão Hipnótico", "level": 3, "source": "bard", "range": "36 m", "conc": true, "notes": "Área: cubo de 9 m. Criaturas na área que vejam o padrão fazem salvaguarda de Sabedoria. Em falha, ficam enfeitiçadas, incapacitadas e com deslocamento 0. O efeito termina para uma criatura se ela sofrer dano ou se outra criatura usar uma ação para despertá-la. Pode afetar aliados.", "cast": "1 ação", "duration": "Concentração, até 1 minuto", "save": "Sabedoria; evita o efeito no sucesso", "damage": "—"}, {"name": "Enviar Mensagem", "level": 3, "source": "bard", "range": "Longa distância", "conc": false, "notes": "Você envia uma mensagem de até 25 palavras a uma criatura conhecida. Ela reconhece você como remetente se souber quem você é e pode responder imediatamente com outra mensagem curta. Outros planos podem impedir ou dificultar o contato, conforme a magia.", "cast": "1 ação", "duration": "1 rodada", "save": "Nenhuma", "damage": "—"}, {"name": "Revivificar", "level": 3, "source": "lore", "range": "Toque", "conc": false, "notes": "Toca uma criatura que tenha morrido há no máximo 1 minuto. Ela retorna à vida com 1 PV. Não restaura partes do corpo ausentes e não funciona em morte causada por velhice. Exige componente material de alto valor que é consumido pela magia.", "cast": "1 ação", "duration": "Instantânea", "save": "Nenhuma", "damage": "Retorna com 1 PV"}, {"name": "Passo Trovejante", "level": 3, "source": "lore", "range": "27 m", "conc": false, "notes": "Você se teleporta para um espaço desocupado que possa ver dentro do alcance e pode levar uma criatura voluntária adjacente, desde que ela caiba no destino. Imediatamente após sair, criaturas a até 3 m do ponto de origem fazem salvaguarda de Constituição; em falha sofrem o dano total, em sucesso metade. Em espaços superiores, o dano aumenta em 1d10 por círculo acima do 3º.", "cast": "1 ação", "duration": "Instantânea", "save": "Constituição; metade do dano no sucesso", "damage": "3d10 trovejante"}];
 const FEATURE_DATA={"1": [["Conjuração", "Acesso a truques, magias conhecidas e espaços de magia."], ["Inspiração Bárdica", "Ação bônus; usos iguais ao modificador de Carisma (mín. 1)."]], "2": [["Valete de Todos os Ofícios", "Metade da proficiência em testes de habilidade sem proficiência."], ["Canção de Descanso", "Cura adicional em descanso curto ao gastar Dados de Vida."]], "3": [["Colégio do Conhecimento", "Subclasse ativa."], ["Especialização", "Escolha 2 perícias proficientes para dobrar a proficiência."], ["Proficiências Adicionais", "Colégio do Conhecimento concede 3 perícias."], ["Palavras de Interrupção", "Reação que gasta Inspiração Bárdica para reduzir ataque, teste de habilidade ou dano de criatura visível no alcance."]], "4": [["Aumento de Atributo / Talento", "Escolha do jogador; ajuste os atributos manualmente na ficha."]], "5": [["Fonte de Inspiração", "Inspiração Bárdica passa a voltar também no descanso curto."], ["Inspiração Bárdica d8", "O dado aumenta para d8."]], "6": [["Contracanção", "Ação de performance que ajuda contra medo e encantamento."], ["Segredos Mágicos Adicionais (Lore)", "Escolha 2 magias de qualquer classe; não contam no limite normal de magias conhecidas."]], "7": [], "8": [["Aumento de Atributo / Talento", "Nova escolha do jogador."]], "9": [["Canção de Descanso d8", "O dado da Canção de Descanso aumenta."]], "10": [["Inspiração Bárdica d10", "O dado aumenta para d10."], ["Especialização", "Escolha mais 2 perícias proficientes."], ["Segredos Mágicos", "Escolha 2 magias de qualquer classe; contam no total normal de magias conhecidas."]], "11": [], "12": [["Aumento de Atributo / Talento", "Nova escolha do jogador."]], "13": [["Canção de Descanso d10", "O dado da Canção de Descanso aumenta."]], "14": [["Segredos Mágicos", "Escolha mais 2 magias de qualquer classe."], ["Talento Inigualável", "Pode gastar Inspiração Bárdica para somar o dado a um teste de habilidade."]], "15": [["Inspiração Bárdica d12", "O dado aumenta para d12."]], "16": [["Aumento de Atributo / Talento", "Nova escolha do jogador."]], "17": [["Canção de Descanso d12", "O dado da Canção de Descanso aumenta."]], "18": [["Segredos Mágicos", "Escolha mais 2 magias de qualquer classe."]], "19": [["Aumento de Atributo / Talento", "Nova escolha do jogador."]], "20": [["Inspiração Superior", "Ao rolar iniciativa sem Inspiração Bárdica restante, recupera 1 uso."]]};
 
 let state={
@@ -530,6 +548,8 @@ function load(){
     }
   }
   if(!Array.isArray(state.spells)||!state.spells.length) state.spells=JSON.parse(JSON.stringify(DEFAULT_SPELLS));
+  migrateSpellChanges();
+  enrichSpellDetails();
   document.getElementById('levelSelect').value=state.level;
   document.getElementById('hpNow').value=state.hp;
   document.getElementById('tempHP').value=state.tempHP;
@@ -577,6 +597,22 @@ function updateSpellLevelOptions(){
 }
 
 function sourceLabel(s){return s==='lore'?'Segredo Lore':s==='secret'?'Segredo Mágico':'Bardo';}
+
+function migrateSpellChanges(){
+  if(!Array.isArray(state.spells)) return;
+  state.spells.forEach(sp=>{
+    const n=(sp.name||'').toLowerCase();
+    if(n==='esquentar metal'){
+      sp.name='Ajuda'; sp.level=2; sp.source='bard'; sp.range='9 m'; sp.conc=false;
+      sp.notes='Até 3 criaturas aumentam seus PV máximos e atuais em 5 por 8 horas. +5 adicionais por círculo acima do 2º.';
+    }
+    if(n==='chicote psíquico de tasha'||n==='chicote mental de tasha'||n==='chicote psiquico de tasha'){
+      sp.name='Revivificar'; sp.level=3; sp.source='lore'; sp.range='Toque'; sp.conc=false;
+      sp.notes='Traz de volta à vida uma criatura que morreu há no máximo 1 minuto, com 1 PV. Exige componente material consumido conforme a magia.';
+    }
+  });
+}
+
 function renderSpells(){
   const box=document.getElementById('chosenSpells');box.innerHTML='';
   const ordered=[...state.spells].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name,'pt-BR'));
@@ -601,28 +637,126 @@ function renderSpells(){
   if(lore>(state.level>=6?2:0))warnings.push('Há mais Segredos Lore extras do que o nível permite.');
   if(state.spells.some(s=>s.level>maxSpellLevel()))warnings.push('Há magias de círculo acima do atualmente liberado; elas foram mantidas, mas não estão disponíveis neste nível.');
   document.getElementById('spellManagerWarning').textContent=warnings.join(' ');
+  renderSpellReference();
+}
+
+
+
+function enrichSpellDetails(){
+  const DETAILS={"Zombaria Viciosa": {"cast": "1 ação", "duration": "Instantânea", "save": "Sabedoria; nenhum dano no sucesso", "damage": "2d4 psíquico no nível 6", "notes": "Uma criatura que você possa ver e que possa ouvi-lo faz uma salvaguarda de Sabedoria. Em falha, sofre dano psíquico e tem desvantagem na próxima jogada de ataque que fizer antes do fim do próximo turno dela. O dano do truque aumenta com o nível do personagem."}, "Prestidigitação": {"cast": "1 ação", "duration": "Até 1 hora, conforme o efeito", "save": "Nenhuma", "damage": "—", "notes": "Produz pequenos efeitos mágicos utilitários, como efeitos sensoriais simples, acender ou apagar uma chama pequena, limpar ou sujar um objeto, alterar temperatura ou sabor de material não vivo, criar uma pequena marca ou produzir uma bugiganga temporária. Não exige concentração."}, "Amizade": {"cast": "1 ação", "duration": "Até 1 minuto", "save": "Nenhuma", "damage": "—", "notes": "Enquanto mantiver concentração, você tem vantagem em testes de Carisma direcionados a uma criatura escolhida que não seja hostil. Quando a magia termina, a criatura percebe que foi influenciada magicamente e pode reagir de acordo."}, "Sussurros Dissonantes": {"cast": "1 ação", "duration": "Instantânea", "save": "Sabedoria; metade do dano no sucesso", "damage": "3d6 psíquico", "notes": "Em falha, além do dano, o alvo usa imediatamente a reação, se disponível, para se afastar de você pelo caminho mais seguro. Esse movimento usa a reação e pode provocar ataques de oportunidade. Em espaços superiores, o dano aumenta em 1d6 por círculo acima do 1º."}, "Palavra Curativa": {"cast": "1 ação bônus", "duration": "Instantânea", "save": "Nenhuma", "damage": "Cura 1d4 + modificador de Carisma", "notes": "Uma criatura que você possa ver dentro do alcance recupera PV. Não afeta mortos-vivos nem constructos. Em espaços superiores, a cura aumenta em 1d4 por círculo acima do 1º."}, "Fogo das Fadas": {"cast": "1 ação", "duration": "Concentração, até 1 minuto", "save": "Destreza; evita o efeito no sucesso", "damage": "—", "notes": "Área: cubo de 6 m. Cada criatura na área faz salvaguarda de Destreza. Quem falhar fica delineado por luz; ataques contra ela têm vantagem se o atacante puder vê-la, e ela não recebe benefício de invisibilidade. Pode afetar aliados dentro da área."}, "Silêncio": {"cast": "1 ação ou ritual", "duration": "Concentração, até 10 minutos", "save": "Nenhuma", "damage": "—", "notes": "Cria uma esfera de 6 m de raio. Nenhum som é produzido ou atravessa a área. Criaturas inteiramente dentro dela ficam imunes a dano trovejante, e uma magia que dependa de componente verbal não pode ser conjurada ali."}, "Invisibilidade": {"cast": "1 ação", "duration": "Concentração, até 1 hora", "save": "Nenhuma", "damage": "—", "notes": "Uma criatura tocada fica invisível, junto do equipamento que estiver vestindo ou carregando. Para esse alvo, a magia termina se ele atacar ou conjurar uma magia. Ao usar espaço superior, pode afetar uma criatura adicional por círculo acima do 2º."}, "Ajuda": {"cast": "1 ação", "duration": "8 horas", "save": "Nenhuma", "damage": "+5 PV máximos e atuais", "notes": "Escolha até 3 criaturas dentro do alcance. Os PV máximos e os PV atuais de cada uma aumentam em 5 pela duração. Não exige concentração. Ao conjurar com espaço acima do 2º, o aumento cresce em +5 PV para cada círculo acima do 2º."}, "Dissipar Magia": {"cast": "1 ação", "duration": "Instantânea", "save": "Teste de habilidade de conjuração apenas contra magia de 4º círculo ou superior", "damage": "—", "notes": "Escolha uma criatura, objeto ou efeito mágico dentro do alcance. Magias de 3º círculo ou inferiores sobre o alvo terminam automaticamente. Para cada magia de círculo superior, faça um teste de habilidade usando seu atributo de conjuração contra CD 10 + círculo da magia; em sucesso, ela termina."}, "Padrão Hipnótico": {"cast": "1 ação", "duration": "Concentração, até 1 minuto", "save": "Sabedoria; evita o efeito no sucesso", "damage": "—", "notes": "Área: cubo de 9 m. Criaturas na área que vejam o padrão fazem salvaguarda de Sabedoria. Em falha, ficam enfeitiçadas, incapacitadas e com deslocamento 0. O efeito termina para uma criatura se ela sofrer dano ou se outra criatura usar uma ação para despertá-la. Pode afetar aliados."}, "Enviar Mensagem": {"cast": "1 ação", "duration": "1 rodada", "save": "Nenhuma", "damage": "—", "notes": "Você envia uma mensagem de até 25 palavras a uma criatura conhecida. Ela reconhece você como remetente se souber quem você é e pode responder imediatamente com outra mensagem curta. Outros planos podem impedir ou dificultar o contato, conforme a magia."}, "Revivificar": {"cast": "1 ação", "duration": "Instantânea", "save": "Nenhuma", "damage": "Retorna com 1 PV", "notes": "Toca uma criatura que tenha morrido há no máximo 1 minuto. Ela retorna à vida com 1 PV. Não restaura partes do corpo ausentes e não funciona em morte causada por velhice. Exige componente material de alto valor que é consumido pela magia."}, "Passo Trovejante": {"cast": "1 ação", "duration": "Instantânea", "save": "Constituição; metade do dano no sucesso", "damage": "3d10 trovejante", "notes": "Você se teleporta para um espaço desocupado que possa ver dentro do alcance e pode levar uma criatura voluntária adjacente, desde que ela caiba no destino. Imediatamente após sair, criaturas a até 3 m do ponto de origem fazem salvaguarda de Constituição; em falha sofrem o dano total, em sucesso metade. Em espaços superiores, o dano aumenta em 1d10 por círculo acima do 3º."}};
+  if(!Array.isArray(state.spells)) return;
+  state.spells.forEach(sp=>{
+    const d=DETAILS[sp.name];
+    if(d){
+      sp.cast=d.cast; sp.duration=d.duration; sp.save=d.save; sp.damage=d.damage; sp.notes=d.notes;
+    }else{
+      if(sp.cast===undefined) sp.cast='';
+      if(sp.duration===undefined) sp.duration='';
+      if(sp.save===undefined) sp.save='';
+      if(sp.damage===undefined) sp.damage='';
+    }
+  });
+}
+
+function renderSpellReference(){
+  const box=document.getElementById('dynamicSpellReference');
+  if(!box) return;
+  box.innerHTML='';
+  if(!state.spells.length){
+    box.innerHTML='<div class="ref-empty">Nenhuma magia cadastrada.</div>';
+    return;
+  }
+  const grouped={};
+  [...state.spells].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name,'pt-BR')).forEach(sp=>{
+    const key=String(sp.level);
+    (grouped[key]||(grouped[key]=[])).push(sp);
+  });
+
+  Object.keys(grouped).sort((a,b)=>+a-+b).forEach(key=>{
+    const section=document.createElement('div'); section.className='ref-level';
+    const title=document.createElement('h3'); title.className='ref-level-title';
+    title.textContent=(+key===0?'Truques':key+'º círculo');
+    section.appendChild(title);
+
+    grouped[key].forEach(sp=>{
+      const card=document.createElement('div'); card.className='ref-spell';
+
+      const head=document.createElement('div'); head.className='ref-spell-head';
+      const name=document.createElement('div'); name.className='ref-spell-name'; name.textContent=sp.name;
+      const tags=document.createElement('div'); tags.className='ref-spell-tags';
+      if(sp.conc){const x=document.createElement('span');x.className='badge conc';x.textContent='Concentração';tags.appendChild(x);}
+      const lvl=document.createElement('span');lvl.className='badge';lvl.textContent=(sp.level===0?'Truque':sp.level+'º');tags.appendChild(lvl);
+      head.append(name,tags);
+
+      const body=document.createElement('div'); body.className='ref-spell-body';
+
+      const grid=document.createElement('div'); grid.className='ref-detail-grid';
+      const fields=[
+        ['Tempo de conjuração',sp.cast||'—'],
+        ['Alcance',sp.range||'—'],
+        ['Duração',sp.duration||'—'],
+        ['Salvaguarda / ataque',sp.save||'Nenhuma'],
+        ['Dano / cura',sp.damage||'—'],
+        ['Concentração',sp.conc?'Sim':'Não']
+      ];
+      fields.forEach(([label,value])=>{
+        const d=document.createElement('div'); d.className='ref-detail';
+        d.innerHTML='<b>'+label+':</b><br>'+value;
+        grid.appendChild(d);
+      });
+
+      const origin=document.createElement('div'); origin.className='small';
+      origin.innerHTML='<b>Origem:</b> '+sourceLabel(sp.source);
+
+      const desc=document.createElement('div'); desc.className='ref-description';
+      desc.textContent=sp.notes||'Sem descrição detalhada cadastrada.';
+
+      body.append(grid,origin,desc);
+      head.onclick=()=>card.classList.toggle('open');
+      card.append(head,body);
+      section.appendChild(card);
+    });
+    box.appendChild(section);
+  });
 }
 
 function addSpellChoice(){
-  const name=document.getElementById('newSpellName').value.trim();if(!name){alert('Digite o nome da magia.');return;}
+  const name=document.getElementById('newSpellName').value.trim();
+  if(!name){alert('Digite o nome da magia.');return;}
   const level=+document.getElementById('newSpellLevel').value;
   const source=document.getElementById('newSpellSource').value;
   if(level>maxSpellLevel()){alert('Esse círculo ainda não está liberado no seu nível.');return;}
   if(source==='lore'&&state.level<6){alert('Segredos Mágicos Adicionais do Colégio do Conhecimento são liberados no nível 6.');return;}
   if(source==='lore'&&state.spells.filter(s=>s.source==='lore').length>=2){alert('Você já cadastrou os 2 Segredos Lore extras.');return;}
+
   state.spells.push({
-    name,level,source,range:document.getElementById('newSpellRange').value.trim(),
-    conc:document.getElementById('newSpellConc').checked,notes:document.getElementById('newSpellNotes').value.trim()
+    name,level,source,
+    cast:document.getElementById('newSpellCast').value.trim(),
+    range:document.getElementById('newSpellRange').value.trim(),
+    duration:document.getElementById('newSpellDuration').value.trim(),
+    save:document.getElementById('newSpellSave').value.trim(),
+    damage:document.getElementById('newSpellDamage').value.trim(),
+    conc:document.getElementById('newSpellConc').checked,
+    notes:document.getElementById('newSpellNotes').value.trim()
   });
-  document.getElementById('newSpellName').value='';document.getElementById('newSpellRange').value='';
-  document.getElementById('newSpellNotes').value='';document.getElementById('newSpellConc').checked=false;
+
+  ['newSpellName','newSpellCast','newSpellRange','newSpellDuration','newSpellSave','newSpellDamage','newSpellNotes']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newSpellConc').checked=false;
   save();renderSpells();
 }
 function editSpellChoice(i){
-  const s=state.spells[i];const name=prompt('Nome:',s.name);if(name===null)return;
-  const notes=prompt('Resumo / efeito:',s.notes||'');if(notes===null)return;
-  const range=prompt('Alcance:',s.range||'');if(range===null)return;
-  s.name=name.trim()||s.name;s.notes=notes.trim();s.range=range.trim();save();renderSpells();
+  const s=state.spells[i];
+  const name=prompt('Nome:',s.name); if(name===null)return;
+  const cast=prompt('Tempo de conjuração:',s.cast||''); if(cast===null)return;
+  const range=prompt('Alcance:',s.range||''); if(range===null)return;
+  const duration=prompt('Duração:',s.duration||''); if(duration===null)return;
+  const saveText=prompt('Salvaguarda / ataque:',s.save||''); if(saveText===null)return;
+  const damage=prompt('Dano / cura:',s.damage||''); if(damage===null)return;
+  const notes=prompt('Descrição completa:',s.notes||''); if(notes===null)return;
+  s.name=name.trim()||s.name; s.cast=cast.trim(); s.range=range.trim(); s.duration=duration.trim();
+  s.save=saveText.trim(); s.damage=damage.trim(); s.notes=notes.trim();
+  save();renderSpells();
 }
 function removeSpellChoice(i){if(confirm('Remover esta magia da lista de escolhidas?')){state.spells.splice(i,1);save();renderSpells();}}
 
